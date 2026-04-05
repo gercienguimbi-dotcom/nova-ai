@@ -281,10 +281,18 @@ export default function NovaAI() {
     const file = e.target.files[0];
     if (!file) return;
     setLoading(true);
-    const formData = new FormData();
-    formData.append("file", file);
     try {
-      const res = await fetch("http://localhost:3001/api/upload-pdf", { method: "POST", body: formData });
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch("/api/upload-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64, name: file.name }),
+      });
       const data = await res.json();
       if (data.text) {
         setPdfContext({ name: file.name, text: data.text });
@@ -292,7 +300,7 @@ export default function NovaAI() {
         alert("Erreur PDF: " + data.error);
       }
     } catch (err) {
-      alert("Erreur serveur lors de la lecture du PDF !");
+      alert("Erreur lors de la lecture du PDF !");
     }
     setLoading(false);
     e.target.value = "";
@@ -354,7 +362,7 @@ export default function NovaAI() {
     const dynamicPrompt = SYSTEM_PROMPT + `\n\nThe user's message language is: ${lang}. You MUST respond in ${lang} only.`;
 
     try {
-      const res = await fetch("http://localhost:3001/api/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "system", content: dynamicPrompt }, ...apiHistory.current] })
       });

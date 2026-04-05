@@ -10,10 +10,12 @@ const multer = require('multer')
 const pdfParse = require('pdf-parse')
 const upload = multer({ storage: multer.memoryStorage() })
 
-app.post('/api/upload-pdf', upload.single('file'), async (req, res) => {
+app.post('/api/upload-pdf', async (req, res) => {
   try {
-    if (!req.file) throw new Error("Aucun fichier reçu");
-    const data = await pdfParse(req.file.buffer);
+    const { base64 } = req.body;
+    if (!base64) throw new Error("Aucun fichier reçu");
+    const buffer = Buffer.from(base64, 'base64');
+    const data = await pdfParse(buffer);
     res.json({ text: data.text });
   } catch(e) {
     res.status(500).json({ error: e.message });
