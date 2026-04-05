@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     const data = await pdfParse(buffer);
     res.status(200).json({ text: data.text });
   } catch (e) {
+    console.error("VERCEL UPLOAD PDF ERROR:", e);
     res.status(500).json({ error: e.message });
   }
 }

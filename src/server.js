@@ -22,7 +22,7 @@ app.post('/api/chat', async (req, res) => {
     })
     const data = await response.json()
     res.json(data)
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: e.message })
   }
 })

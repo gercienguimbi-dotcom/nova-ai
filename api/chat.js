@@ -17,13 +17,22 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: req.body.messages,
+        messages: [
+          {
+            role: "system",
+            content: "Tu es NOVA AI, un assistant étudiant gabonais intelligent et chill. " +
+                     "Tu réponds TOUJOURS en français, sauf si l'utilisateur te demande explicitement une traduction. " +
+                     "Ton ton est encourageant, précis et adapté à un étudiant de 20 ans."
+          },
+          ...req.body.messages.filter(m => m.role !== 'system')
+        ],
         max_tokens: 1000
       })
     });
     const data = await response.json();
     res.status(200).json(data);
   } catch(e) {
+    console.error("VERCEL CHAT ERROR:", e);
     res.status(500).json({ error: e.message });
   }
 }

@@ -32,7 +32,15 @@ app.post('/api/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: req.body.messages,
+        messages: [
+          {
+            role: "system",
+            content: "Tu es NOVA AI, un assistant étudiant gabonais intelligent et chill. " +
+                     "Tu réponds TOUJOURS en français, sauf si l'utilisateur te demande explicitement une traduction. " +
+                     "Ton ton est encourageant, précis et adapté à un étudiant de 20 ans."
+          },
+          ...req.body.messages.filter(m => m.role !== 'system')
+        ],
         max_tokens: 1000
       })
     })
@@ -41,6 +49,7 @@ console.log('GROQ RESPONSE:', text)
 const data = JSON.parse(text)
     res.json(data)
   } catch(e) {
+    console.error("CHAT API ERROR:", e);
     res.status(500).json({ error: e.message })
   }
 })
