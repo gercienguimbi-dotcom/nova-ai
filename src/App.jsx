@@ -458,7 +458,6 @@ export default function NovaAI() {
           )}
         </div>
 
-        <div className="kente-divider" />
 
         <div className="input-section">
           <div className="quick-actions">
