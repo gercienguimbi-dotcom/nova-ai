@@ -240,7 +240,7 @@ body {
 }
 
 /* Chat Messages */
-.chat-container {
+.chat-window {
   flex: 1;
   width: 100%;
   overflow-y: auto;
@@ -251,19 +251,29 @@ body {
   overflow-x: hidden;
 }
 
-.chat-container::before {
+.chat-window::before {
   content: "";
-  position: absolute;
+  /* 1. ON FIXE LE LOGO AU CENTRE DE L'ÉCRAN */
+  position: fixed; 
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
+  
+  /* 2. TAILLE OPTIMALE (Moins que la source pour garder la netteté) */
+  width: 450px; 
+  height: 450px;
+  
+  /* 3. L'IMAGE */
   background-image: url('/uob-logo.jpeg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.05;
+  
+  /* 4. NETTETÉ & VISIBILITÉ */
+  opacity: 0.22; /* 👈 Le réglage parfait pour 735px */
+  filter: contrast(1.1); /* 👈 Petit bonus pour rendre les traits plus noirs */
+  
+  /* 5. PRIORITÉ VISUELLE */
   pointer-events: none;
   z-index: 0;
 }

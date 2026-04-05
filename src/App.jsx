@@ -443,7 +443,7 @@ export default function NovaAI() {
         </nav>
 
 
-        <div ref={chatRef} className="chat-container">
+        <div ref={chatRef} className="chat-window">
           {messages.length === 0 ? (
             <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, opacity: 0.35 }}>
               <AdinkraSVG color="var(--accent)" size={48} />
