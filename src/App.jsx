@@ -2,16 +2,28 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 const THEMES = {
   dark: {
-    bg: "#05110a", surface: "#0a1c10", surface2: "#0f2b18",
-    border: "#184426", accent: "#009e60", accent2: "#fcd116",
-    accent3: "#3a75c4", text: "#ecf4f0", muted: "#457a59",
-    inputBg: "#0a1c10"
+    bg: "#050a05",
+    surface: "#0d1a0d",
+    surface2: "#1a2e1a",
+    border: "#1b331b",
+    accent: "#00ff41",
+    accent2: "#fcd116",
+    accent3: "#3a75c4",
+    text: "#e0e0e0",
+    muted: "#457a59",
+    inputBg: "#020502"
   },
   light: {
-    bg: "#f2f8f5", surface: "#e6f2eb", surface2: "#d2e8db",
-    border: "#b8d9c6", accent: "#009e60", accent2: "#d9ae00",
-    accent3: "#3a75c4", text: "#081c0f", muted: "#5c8c70",
-    inputBg: "#e6f2eb"
+    bg: "#ffffff",
+    surface: "#f0f4f0",
+    surface2: "#e8f5e9",
+    border: "#dddddd",
+    accent: "#009e60",
+    accent2: "#d9ae00",
+    accent3: "#3a75c4",
+    text: "#1a1a1a",
+    muted: "#5c8c70",
+    inputBg: "#f8faf9"
   }
 };
 
@@ -80,15 +92,9 @@ function CodeBlock({ code, lang }) {
   );
 }
 
-function MessageBubble({ msg }) {
+function MessageBubble({ msg, themeColors }) {
   const isGeo = msg.role === "geo";
-  const parts = [];
-  const codeRx = /```(\w*)\n?([\s\S]*?)```/g;
-  let last = 0, m;
-  while ((m = codeRx.exec(codeRx.exec(msg.content) ? msg.content : msg.content)) !== null) {
-      // Small fix for the loop logic to avoid infinite loops if the regex is reset
-  }
-  // Let's rewrite the parts extraction logic clearly
+  // Content extraction logic...
   const content = msg.content;
   const regex = /```(\w*)\n?([\s\S]*?)```/g;
   let match;
@@ -121,45 +127,15 @@ function MessageBubble({ msg }) {
           <span className="author-name">{isGeo ? "NOVA AI" : "VOUS"}</span>
           <span className="message-time">{msg.time}</span>
         </div>
-        <div className="bubble-body">
+        <div className="bubble-body" style={{ backgroundColor: isGeo ? themeColors.surface : themeColors.surface2, color: themeColors.text }}>
           {msgParts.map((p, i) => p.type === "code" ? <CodeBlock key={i} code={p.content} lang={p.lang} /> : <span key={i} dangerouslySetInnerHTML={{ __html: fmt(p.content) }} />)}
+          {msg.isStreaming && <span className="cursor">█</span>}
         </div>
       </div>
     </div>
   );
 }
 
-function TypingBubble() {
-  return (
-    <div className="message-bubble geo">
-      <div className="avatar">
-        <AdinkraSVG color="var(--accent)" size={20} />
-      </div>
-      <div className="bubble-body" style={{ display: "flex", alignItems: "center", gap: 5 }}>
-        {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", animation: `tdot 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
-      </div>
-    </div>
-  );
-}
-
-function ThinkPanel({ steps, active }) {
-  if (!active && steps.length === 0) return null;
-  return (
-    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: "3px solid var(--accent2)", borderRadius: 4, padding: "12px 16px", marginBottom: 12, flexShrink: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--accent2)", letterSpacing: "0.2em" }}>
-        {active && <div style={{ width: 8, height: 8, border: "1.5px solid var(--accent2)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />}
-        RÉFLEXION — NOVA AI
-      </div>
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, lineHeight: 1.9 }}>
-        {steps.map((s, i) => (
-          <div key={i} style={{ display: "flex", gap: 8, color: i === steps.length - 1 && active ? "var(--accent)" : "var(--muted)" }}>
-            <span>{i === steps.length - 1 && active ? "▶" : "✓"}</span><span>{s}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function Sidebar({ conversations, activeId, onSelect, onNew, onLogout, onClose, isMobile }) {
   return (
@@ -206,12 +182,14 @@ export default function NovaAI() {
   const [pdfContext, setPdfContext] = useState(null);
   const [thinkMode, setThinkMode] = useState(true);
   const fileInputRef = useRef(null);
-  const [thinkSteps, setThinkSteps] = useState([]);
-  const [thinking, setThinking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const chatRef = useRef(null);
   const apiHistory = useRef([]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -268,7 +246,7 @@ export default function NovaAI() {
 
   useEffect(() => {
     setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
-  }, [messages, thinkSteps, thinking]);
+  }, [messages]);
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const getTime = () => new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -303,14 +281,7 @@ export default function NovaAI() {
     }
   };
 
-  const runThinking = async () => {
-    setThinking(true); setThinkSteps([]);
-    for (const step of THINK_STEPS) { await sleep(200); setThinkSteps(prev => [...prev, step]); }
-    await sleep(200); setThinking(false);
-  };
-
   const send = useCallback(async () => {
-    console.log("🚀 Le bouton a été cliqué !");
     const text = input.trim();
     if (!text || loading) return;
 
@@ -352,11 +323,8 @@ export default function NovaAI() {
 
     apiHistory.current.push({ role: "user", content: finalPrompt });
 
-    if (thinkMode) await runThinking();
-    setThinkSteps([]);
-
-    const lang = detectLang(text);
-    const dynamicPrompt = SYSTEM_PROMPT + `\n\nThe user's message language is: ${lang}. You MUST respond in ${lang} only.`;
+    const replyMsg = { role: "geo", content: "", time: getTime(), isStreaming: true };
+    setMessages(prev => [...prev, replyMsg]);
 
     try {
       const res = await fetch("/api/chat", {
@@ -364,29 +332,68 @@ export default function NovaAI() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: apiHistory.current })
       });
-      const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || "Erreur de réponse.";
-      apiHistory.current.push({ role: "assistant", content: reply });
-      
-      const replyMsg = { role: "geo", content: reply, time: getTime() };
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullReply = "";
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // Keep partial line in buffer
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === "data: [DONE]") continue;
+          if (trimmed.startsWith("data: ")) {
+            try {
+              const json = JSON.parse(trimmed.slice(6));
+              const delta = json.choices?.[0]?.delta?.content || "";
+              if (delta) {
+                fullReply += delta;
+                setMessages(prev => {
+                  const next = [...prev];
+                  const last = next[next.length - 1];
+                  if (last && last.role === "geo") {
+                    last.content = fullReply;
+                  }
+                  return next;
+                });
+              }
+            } catch (e) {
+              console.warn("JSON Parse Error on line:", trimmed, e);
+            }
+          }
+        }
+      }
+
       setMessages(prev => {
-        const nextMsgsSys = [...prev, replyMsg];
-        localStorage.setItem(`nova_msgs_${convId}`, JSON.stringify(nextMsgsSys));
-        return nextMsgsSys;
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last) last.isStreaming = false;
+        localStorage.setItem(`nova_msgs_${convId}`, JSON.stringify(next));
+        return next;
       });
 
+      apiHistory.current.push({ role: "assistant", content: fullReply });
+      
       setConversations(prev => {
         const nextConvs = prev.map(c => c.id === convId ? { ...c, updated_at: new Date().toISOString() } : c);
         localStorage.setItem('nova_convs', JSON.stringify(nextConvs));
         return nextConvs;
       });
+
     } catch (e) {
       console.error("Détail de l'erreur :", e);
       setMessages(prev => [...prev, { role: "geo", content: `⚠️ Erreur: \`${e.message}\``, time: getTime() }]);
     } finally {
       setLoading(false);
     }
-  }, [input, loading, thinkMode, activeConv, pdfContext]);
+  }, [input, loading, activeConv, pdfContext]);
 
   const onKey = e => { 
     if (e.key === "Enter" && !e.shiftKey) { 
@@ -396,7 +403,7 @@ export default function NovaAI() {
   };
 
   return (
-    <div className="app-container" data-theme={theme}>
+    <div className="app-container">
       {isMobile && sidebarOpen && (
         <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />
       )}
@@ -435,11 +442,6 @@ export default function NovaAI() {
           </div>
         </nav>
 
-        <div className="kente-divider" />
-
-        {(thinking || thinkSteps.length > 0) && (
-          <div style={{ padding: "0 1rem" }}><div style={{ paddingTop: 10 }}><ThinkPanel steps={thinkSteps} active={thinking} /></div></div>
-        )}
 
         <div ref={chatRef} className="chat-container">
           {messages.length === 0 ? (
@@ -451,8 +453,7 @@ export default function NovaAI() {
             </div>
           ) : (
             <>
-              {messages.map((m, i) => <MessageBubble key={i} msg={m} />)}
-              {loading && !thinking && <TypingBubble />}
+              {messages.map((m, i) => <MessageBubble key={i} msg={m} themeColors={THEMES[theme]} />)}
             </>
           )}
         </div>

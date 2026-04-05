@@ -1,32 +1,34 @@
 :root {
-  --bg: #05110a;
-  --surface: #0a1c10;
-  --surface2: #0f2b18;
-  --border: #184426;
+  /* Mode Clair */
+  --bg: #ffffff;
+  --surface: #f0f4f0;
+  --surface2: #e8f5e9;
+  --border: #dddddd;
   --accent: #009e60; /* Gabon Green */
-  --accent-glow: rgba(0, 158, 96, 0.3);
-  --accent2: #fcd116; /* Gabon Yellow */
+  --accent-glow: rgba(0, 158, 96, 0.2);
+  --accent2: #d9ae00; /* Darker yellow for contrast in light mode */
   --accent3: #3a75c4; /* Gabon Blue */
-  --text: #ecf4f0;
-  --muted: #457a59;
-  --input-bg: #0a1c10;
+  --text: #1a1a1a; /* Noir profond pour la lisibilité */
+  --muted: #5c8c70;
+  --input-bg: #f8faf9;
   --font-main: 'Syne', sans-serif;
   --font-mono: 'DM Mono', monospace;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme='light'] {
-  --bg: #f2f8f5;
-  --surface: #e6f2eb;
-  --surface2: #d2e8db;
-  --border: #b8d9c6;
-  --accent: #009e60;
-  --accent-glow: rgba(0, 158, 96, 0.15);
-  --accent2: #d9ae00;
+[data-theme='dark'] {
+  /* Mode Sombre */
+  --bg: #050a05;
+  --surface: #0d1a0d;
+  --surface2: #1a2e1a;
+  --border: #1b331b;
+  --accent: #00ff41; /* Slightly brighter for dark mode visibility */
+  --accent-glow: rgba(0, 255, 65, 0.3);
+  --accent2: #fcd116;
   --accent3: #3a75c4;
-  --text: #081c0f;
-  --muted: #5c8c70;
-  --input-bg: #e6f2eb;
+  --text: #e0e0e0; /* Gris clair pour ne pas agresser les yeux */
+  --muted: #457a59;
+  --input-bg: #020502;
 }
 
 * {
@@ -45,10 +47,18 @@ body {
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap');
 
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes tdot { 0%,60%,100%{transform:translateY(0);opacity:.3} 30%{transform:translateY(-4px);opacity:1} }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background: var(--accent);
+  margin-left: 5px;
+  animation: blink 0.8s infinite;
+  vertical-align: middle;
+}
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
