@@ -408,18 +408,18 @@ export default function NovaAI() {
         <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {sidebarOpen && (
+      {/* {sidebarOpen && (
         <Sidebar conversations={conversations} activeId={activeConv?.id}
           onSelect={selectConv} onNew={newConversation} onLogout={logout}
           onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
-      )}
+      )} */}
 
       <div className="main-content">
         <nav className="navbar">
           <div className="nav-left">
-            <button className="burger-menu" onClick={() => setSidebarOpen(v => !v)}>
+            {/* <button className="burger-menu" onClick={() => setSidebarOpen(v => !v)}>
               ☰
-            </button>
+            </button> */}
             <div className="chat-title">
               {activeConv ? activeConv.title : "NOUVELLE CONVERSATION"}
             </div>
